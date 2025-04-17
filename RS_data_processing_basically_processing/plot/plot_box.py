@@ -29,7 +29,7 @@ def plot_box(data, labels, tag, ylabels, colors):
     rcParams['font.size'] = 12  # 全局字体大小
     
     # 创建主图和第一个 y 轴
-    fig, ax_main = plt.subplots(figsize=(4.5, 2.5))
+    fig, ax_main = plt.subplots(figsize=(5.5, 2.5))
     axes = [ax_main]  # 初始化轴列表，将主轴加入列表
 
     # 绘制第一个箱线图
@@ -62,7 +62,8 @@ def plot_box(data, labels, tag, ylabels, colors):
             patch.set_facecolor(colors[i])
         ax_secondary.tick_params(axis='y', labelcolor=colors[i])
         ax_secondary.grid(axis='y', which='both', linestyle='--', linewidth=0.5, alpha=0.7)
-
+        
+    ax_main.tick_params(axis='x', labelrotation=45)
     # 设置 x 轴标签和刻度
     ax_main.set_xticks(range(1, len(labels) + 1))
     ax_main.set_xticklabels(labels)

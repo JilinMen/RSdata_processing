@@ -4,7 +4,7 @@ Created on Wed Nov 20 16:38:00 2024
 
 @author: jmen
 """
-def plot_histogram(data, tag, xlabel, ylabel, remove_negatives=False):
+def plot_histogram(data, tag, xlabel, ylabel, remove_negatives=False,color='blue',std=True,log_x=False,log_y=False):
     import numpy as np
     from matplotlib import pyplot as plt
     from matplotlib.ticker import FormatStrFormatter
@@ -24,7 +24,7 @@ def plot_histogram(data, tag, xlabel, ylabel, remove_negatives=False):
     if len(data) == 0:
         print(f"No valid data to plot for tag {tag}. Skipping plot.")
         return
-
+    
     # Create plot
     fig, ax = plt.subplots(figsize=(3.5, 2.5))  # Increased figure size for better visibility
 
@@ -49,8 +49,18 @@ def plot_histogram(data, tag, xlabel, ylabel, remove_negatives=False):
     ax.grid(which='major', linestyle='--', linewidth=0.5, color='gray')
 
     # Plot data
-    ax.hist(data, bins=30, color='blue', alpha=0.7, edgecolor='black')  # Histogram plot
-
+    ax.hist(data, bins=30, color=color, alpha=0.7, edgecolor='black')  # Histogram plot
+    
+    if std:
+        std_value = np.nanstd(data)
+        ax.text(0.02, 0.95, f'STD = {std_value:.2f}', transform=ax.transAxes,
+                fontsize=13, fontweight='bold', va='top', ha='left', color='black')
+                
+    if log_x:
+        plt.xscale('log')  # 设置 x 轴为对数坐标
+    if log_y:
+        plt.yscale('log')  # 设置 y 轴为对数坐标
+        
     # Set labels
     ax.set_xlabel(xlabel, fontdict=font2)
     ax.set_ylabel(ylabel, fontdict=font2)

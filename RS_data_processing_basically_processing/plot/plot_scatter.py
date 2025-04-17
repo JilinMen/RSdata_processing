@@ -5,7 +5,7 @@ Created on Tue Oct 22 20:21:00 2024
 @author: jmen
 """
 
-def plot_scatter(x, y, tag, xlabel, ylabel, remove_negatives=False, size=50, color='blue', log=False, line11=True,
+def plot_scatter(x, y, tag, xlabel, ylabel, remove_negatives=False, size=50, color='blue', log_x=False, log_y=False, line11=True, degree=1,poly=None,
                  reg_line=True, confidence=False, ci=95, std=True,edgecolors='k', xylimit=True, alpha_values=None,figsize=(3.5, 3.5), legend=True):
     import numpy as np
     from matplotlib import pyplot as plt
@@ -35,7 +35,19 @@ def plot_scatter(x, y, tag, xlabel, ylabel, remove_negatives=False, size=50, col
     max_val = np.amax([x, y])
     
     # Perform linear regression
-    slope, intercept, r_value, p_value, std_err = linregress(np.log10(x), np.log10(y)) if log else linregress(x, y)
+    if poly == None:
+        if log_x:
+            logx = np.log10(x)
+        else:
+            logx = x
+        if log_y:
+            logy = np.log10(y)
+        else:
+            logy = y
+        coeffs = np.polyfit(logx, logy, degree) 
+        poly = np.poly1d(coeffs)
+        # slope, intercept, r_value, p_value, std_err = linregress(logx, logy)
+        print("coeffs:",coeffs)
 
     # Create plot
     fig, ax = plt.subplots(figsize=figsize)  # Increased figure size for better visibility
@@ -53,18 +65,19 @@ def plot_scatter(x, y, tag, xlabel, ylabel, remove_negatives=False, size=50, col
     ax.tick_params(axis='y', which='minor', direction='in', length=5, width=1, colors='black', labelsize=10)
 
     if xylimit == True:
-        ax.set_xlim(0.8 * min_val, 1.2 * max_val)
-        ax.set_ylim(0.8 * min_val, 1.2 * max_val)
-        ax.set_xticks(np.linspace(0.8 * min_val, 1.2 * max_val, 5))
-        ax.set_yticks(np.linspace(0.8 * min_val, 1.2 * max_val, 5))
+        ax.set_xlim(0.9 * min_val, 1.1 * max_val)
+        ax.set_ylim(0.9 * min_val, 1.1 * max_val)
+        ax.set_xticks(np.linspace(0.9 * min_val, 1.1 * max_val, 5))
+        ax.set_yticks(np.linspace(0.9 * min_val, 1.1 * max_val, 5))
     ax.xaxis.set_major_formatter(FormatStrFormatter('%.2f'))
     ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))
 
     plt.xticks(weight='bold')
     plt.yticks(weight='bold')
     
-    if log:
+    if log_x:
         plt.xscale('log')  # 设置 x 轴为对数坐标
+    if log_y:
         plt.yscale('log')  # 设置 y 轴为对数坐标
 
     if line11:
@@ -86,14 +99,25 @@ def plot_scatter(x, y, tag, xlabel, ylabel, remove_negatives=False, size=50, col
     
     if reg_line == True:
         # Plot regression line
-        x_range = np.linspace(0.8 * np.min(x), 1.2 * np.max(x), 100)
-        if log:
+        x_range = np.linspace(
+            np.min(x),
+            np.max(x),
+            100
+        )
+        if log_x:
             x_range_log = np.log10(x_range)
-            y_pred_log = slope * x_range_log + intercept
-            y_pred = 10**y_pred_log
+            y_pred_log = poly(x_range_log)
+            if log_y:
+                y_pred = 10**y_pred_log
+            else:
+                y_pred = y_pred_log
+        elif log_y:
+            y_pred_log = poly(x_range)
+            y_pred = 10 ** y_pred_log
         else:
-            y_pred = slope * x_range + intercept
-        ax.plot(x_range, y_pred, color='darkorange', linewidth=1.5, label='Fitting line')
+            y_pred = poly(logx)
+
+        ax.plot(x_range, y_pred, color='k', linewidth=1.5, label='Fitting line')
     
     if confidence == True:
         # Compute confidence interval
@@ -152,6 +176,6 @@ def plot_scatter(x, y, tag, xlabel, ylabel, remove_negatives=False, size=50, col
     plt.tight_layout()
 
     # Save figure
-    figname = f'./{tag}_600dpi.png'
+    figname = f'./Scatter_{tag}_600dpi.png'
     plt.savefig(figname, dpi=600)
     plt.close()
